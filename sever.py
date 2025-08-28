@@ -27,3 +27,11 @@ rooms = {"general": []}
 # Helpers
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.',1)[1].lower() in ALLOWED_EXT
+
+# ---- Routes ----
+@app.route("/")
+def index():
+    if "username" in session:
+        return redirect(url_for("chat"))
+    avatars = sorted(os.listdir(os.path.join(app.static_folder, 'avatars')))
+    return render_template("login_register.html", avatars=avatars)
