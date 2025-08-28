@@ -48,3 +48,5 @@ def query_db(query, args=(), one=False):
 init_db()
 users_online = {}  # username -> avatar
 rooms = {"general": []}
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.',1)[1].lower() in ALLOWED_EXT
