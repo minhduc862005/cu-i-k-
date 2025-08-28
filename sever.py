@@ -132,3 +132,15 @@ def upload_file():
     f.save(dest)
     url = url_for('uploaded_file', filename=filename)
     return jsonify({'ok':True, 'url': url})
+
+# ---- Socket events ----
+@socketio.on("join")
+def handle_join(data):
+    username = data.get("username")
+    avatar = data.get("avatar")
+    room = data.get("room","general")
+    users_online[username] = avatar
+    join_room(room)
+    # broadcast updated list
+    socketio.emit("online_users", [{"username":u,"avatar":a} for u,a in users_online.items()])
+    emit("system", {"msg": f"{username} đã vào phòng {room}"}, room=room)
