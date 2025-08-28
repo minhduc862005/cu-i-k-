@@ -166,3 +166,14 @@ body{
   padding:6px;
   cursor:pointer
 }
+.system{
+  text-align:center;
+  color:var(--muted);
+  padding:6px 0;
+  font-size:13px
+}
+.sent-image{
+  max-width:520px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.03)
+}
