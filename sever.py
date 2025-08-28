@@ -144,3 +144,47 @@ def handle_join(data):
     # broadcast updated list
     socketio.emit("online_users", [{"username":u,"avatar":a} for u,a in users_online.items()])
     emit("system", {"msg": f"{username} đã vào phòng {room}"}, room=room)
+
+@socketio.on("leave")
+def handle_leave(data):
+    username = data.get("username")
+    room = data.get("room","general")
+    users_online.pop(username, None)
+    leave_room(room)
+    socketio.emit("online_users", [{"username":u,"avatar":a} for u,a in users_online.items()])
+    emit("system", {"msg": f"{username} đã rời phòng {room}"}, room=room)
+
+@socketio.on("typing")
+def handle_typing(data):
+    room = data.get("room","general")
+    emit("typing", {"user": data.get("username")}, room=room, include_self=False)
+
+@socketio.on("send_message")
+def handle_message(data):
+    username = data.get("username")
+    avatar = data.get("avatar")
+    room = data.get("room","general")
+    msg = data.get("message","")
+    ctype = data.get("type","text")
+    time = datetime.now().strftime("%H:%M")
+    # save to db
+    con = sqlite3.connect(DB_PATH)
+    cur = con.cursor()
+    cur.execute("INSERT INTO messages (user,avatar,room,content,content_type,time) VALUES (?,?,?,?,?,?)",
+             (username, avatar, room, msg, ctype, time))
+    con.commit()
+    con.close()
+    emit("message", {"user":username,"avatar":avatar,"msg":msg,"time":time,"type":ctype}, room=room)
+
+@socketio.on("reaction")
+def handle_reaction(data):
+    emit("reaction", data)
+
+@app.route("/history/<room>")
+def history(room):
+    rows = query_db("SELECT user,avatar,content,content_type,time FROM messages WHERE room=? ORDER BY id ASC", (room,))
+    return jsonify([{"user":r[0],"avatar":r[1],"content":r[2],"type":r[3],"time":r[4]} for r in rows])
+
+if __name__ == "__main__":
+    # listen on all interfaces so other machines in LAN can connect
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
