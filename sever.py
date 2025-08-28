@@ -46,3 +46,5 @@ def query_db(query, args=(), one=False):
 
 # Khởi tạo DB
 init_db()
+users_online = {}  # username -> avatar
+rooms = {"general": []}
