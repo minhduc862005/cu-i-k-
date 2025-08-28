@@ -1,1 +1,17 @@
-
+:root{
+  --bg:#0f1724; 
+  --card:#0b1220; 
+  --text:#e6eef6; 
+  --muted:#9aa6b2; 
+  --primary:#5aa0ff; 
+  --bubble:#0f1a26; 
+  --bubble2:#1f6fff; 
+  --border:#14202b;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,Arial}
+body{
+  background:linear-gradient(180deg,#07101a,#0b1724);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased
+}
