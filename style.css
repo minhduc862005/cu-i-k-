@@ -186,3 +186,7 @@ body{
   background:transparent;
   cursor:pointer
 }
+@media (max-width:900px){
+  .app.modern{grid-template-columns:1fr}
+  .sidebar{display:none}
+}
