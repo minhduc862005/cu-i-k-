@@ -13,6 +13,12 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET","change_this_secret_for_prod")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 socketio = SocketIO(app, cors_allowed_origins="*")
+app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET","change_this_secret_for_prod")
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# ---- Database helpers ----
 def init_db():
     con = sqlite3.connect(DB_PATH)
     cur = con.cursor()
