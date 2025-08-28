@@ -116,3 +116,19 @@ def chat():
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'ok':False, 'error':'no file'})
+    f = request.files['file']
+    if f.filename == '':
+        return jsonify({'ok':False, 'error':'no filename'})
+    if not allowed_file(f.filename):
+        return jsonify({'ok':False, 'error':'invalid ext'})
+    filename = secure_filename(str(uuid.uuid4().hex + '_' + f.filename))
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    dest = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    f.save(dest)
+    url = url_for('uploaded_file', filename=filename)
+    return jsonify({'ok':True, 'url': url})
