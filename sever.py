@@ -74,3 +74,22 @@ def upload_file():
 @app.route("/history/<room>")
 def history(room):
     ...
+@socketio.on("join")
+def handle_join(data):
+    ...
+
+@socketio.on("leave")
+def handle_leave(data):
+    ...
+
+@socketio.on("typing")
+def handle_typing(data):
+    ...
+
+@socketio.on("send_message")
+def handle_message(data):
+    ...
+
+@socketio.on("reaction")
+def handle_reaction(data):
+    ...
