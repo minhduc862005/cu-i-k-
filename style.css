@@ -145,3 +145,24 @@ body{
   color:white;
   cursor:pointer
 }
+.emoji-picker{
+  position:fixed;
+  right:100px;
+  bottom:80px;
+  background:#07101a;
+  border:1px solid rgba(255,255,255,0.03);
+  padding:8px;
+  border-radius:10px;
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  width:240px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.6)
+}
+.emoji-btn{
+  border:none;
+  background:transparent;
+  font-size:18px;
+  padding:6px;
+  cursor:pointer
+}
