@@ -35,3 +35,12 @@ def index():
         return redirect(url_for("chat"))
     avatars = sorted(os.listdir(os.path.join(app.static_folder, 'avatars')))
     return render_template("login_register.html", avatars=avatars)
+
+@app.route("/register", methods=["POST"])
+def register():
+    username = request.form.get("username","").strip()
+    password = request.form.get("password","").strip()
+    avatar = request.form.get("avatar")
+    if not username or not password:
+        flash("Tên hoặc mật khẩu không hợp lệ", "error")
+        return redirect(url_for("index"))
