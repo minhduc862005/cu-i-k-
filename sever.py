@@ -53,3 +53,18 @@ def register():
     query_db("INSERT INTO users (username,password_hash,avatar) VALUES (?,?,?)", (username, pwdhash, avatar))
     flash("Đăng ký thành công. Bạn có thể đăng nhập ngay.", "success")
     return redirect(url_for("index"))
+
+@app.route("/login", methods=["POST"])
+def login():
+    username = request.form.get("username","").strip()
+    password = request.form.get("password","").strip()
+    user = query_db("SELECT username, password_hash, avatar FROM users WHERE username=?", (username,), one=True)
+    if not user:
+        flash("Tài khoản không tồn tại", "error")
+        return redirect(url_for("index"))
+    if not check_password_hash(user[1], password):
+        flash("Mật khẩu không đúng", "error")
+        return redirect(url_for("index"))
+    session["username"] = user[0]
+    session["avatar"] = user[2] or ""
+    return redirect(url_for("chat"))
