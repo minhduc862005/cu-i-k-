@@ -83,3 +83,24 @@ body{
 }
 .online-item:hover{background:rgba(255,255,255,0.02)}
 .online-avatar{width:40px;height:40px;border-radius:10px}
+.main{
+  display:flex;
+  flex-direction:column;
+  overflow:hidden
+}
+.messages{
+  flex:1;
+  padding:20px;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:14px
+}
+.message{
+  display:flex;
+  align-items:flex-end;
+  gap:12px
+}
+.message.other{justify-content:flex-start}
+.message.mine{justify-content:flex-end}
+.avatar{width:40px;height:40px;border-radius:10px}
