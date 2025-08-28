@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>CuteChat — Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="chat-page">
+  <div class="topbar card">
+    <div class="brand">CuteChat</div>
+    <div class="actions">
+      <button id="themeBtn" class="icon-btn" title="Toggle theme">🌙</button>
+      <a href="{{ url_for('logout') }}" class="btn small">Đăng xuất</a>
+    </div>
+  </div>
+
+  <div class="app modern">
+    <aside class="sidebar card">
+      <div class="me">
+        <img src="{{ url_for('static', filename=avatar) }}" class="me-avatar" alt="avatar">
+        <div>
+          <div class="me-name">{{ username }}</div>
+          <div class="me-bio">Online</div>
+        </div>
+      </div>
+
+      <div class="online-title">Friends</div>
+      <div id="onlineList" class="online-list"></div>
+      <div class="rooms">
+        <div class="online-title">Rooms</div>
+        <div id="roomsList"></div>
+      </div>
+    </aside>
+
+    <main class="main card">
+      <div id="messages" class="messages" aria-live="polite"></div>
+
+      <div class="composer">
+        <div class="composer-left">
+          <input id="fileInput" type="file" accept="image/*" style="display:none">
+          <button id="attachBtn" class="icon-btn" title="Attach image">📎</button>
+        </div>
+        <input id="msgInput" placeholder="Nhập tin nhắn..." autocomplete="off" />
+        <button id="emojiBtn" class="icon-btn" title="Emoji picker">😊</button>
+        <button id="sendBtn" class="send-btn" title="Gửi">✈️</button>
+      </div>
+    </main>
+  </div>
+
+  <div id="emojiPicker" class="emoji-picker" style="display:none"></div>
+
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const username = "{{ username }}";
+    const avatar = "{{ avatar }}";
+    const rooms = {{ rooms|tojson }};
+    const socket = io();
+
+    // theme toggle
+    if(localStorage.getItem('theme')==='dark') document.documentElement.classList.add('dark');
+    document.getElementById('themeBtn').onclick = function(){ const r=document.documentElement; const d=r.classList.toggle('dark'); localStorage.setItem('theme', d?'dark':'light'); };
+
+    // join default room
+    let currentRoom = rooms && rooms.length?rooms[0]:'general';
+    socket.emit('join', {username:username, avatar:avatar, room:currentRoom});
+
+    const messages = document.getElementById('messages');
+    const onlineList = document.getElementById('onlineList');
+    const roomsList = document.getElementById('roomsList');
+
+    function fetchHistory(room){
+      fetch('/history/' + room).then(r=>r.json()).then(data=>{
+        messages.innerHTML='';
+        data.forEach(d=>{
+          addMessage({user:d.user, avatar:d.avatar, msg:d.content, time:d.time, type:d.type});
+        });
+      });
+    }
+    fetchHistory(currentRoom);
+
+    function avatarURL(p){ return p?('/static/' + p):''; }
+
+    function addMessage(data){
+      const mine = data.user === username;
+      const row = document.createElement('div');
+      row.className = 'message ' + (mine?'mine':'other');
+      const img = document.createElement('img'); img.src = avatarURL(data.avatar); img.className='avatar';
+      const bubble = document.createElement('div'); bubble.className='bubble';
+      if(data.type === 'image'){ bubble.innerHTML = "<img class='sent-image' src='"+data.msg+"'/>"; }
+      else bubble.innerHTML = "<div class='bubble-text'>" + escapeHtml(data.msg) + "</div>";
+      bubble.innerHTML += "<div class='time'>"+data.time+"</div>";
+      if(mine){ row.appendChild(bubble); row.appendChild(img); } else { row.appendChild(img); row.appendChild(bubble); }
+      messages.appendChild(row); messages.scrollTop = messages.scrollHeight;
+    }
+
+    socket.on('message', addMessage);
+    socket.on('system', function(d){ const el=document.createElement('div'); el.className='system'; el.textContent=d.msg; messages.appendChild(el); messages.scrollTop = messages.scrollHeight; });
+    socket.on('online_users', function(list){
+      onlineList.innerHTML='';
+      list.forEach(u=>{
+        const it=document.createElement('div'); it.className='online-item'; const i=document.createElement('img'); i.src=avatarURL(u.avatar); i.className='online-avatar'; const n=document.createElement('div'); n.className='online-name'; n.textContent=u.username; it.appendChild(i); it.appendChild(n); onlineList.appendChild(it);
+      });
+    });
+
+    // typing (simple)
+    const input = document.getElementById('msgInput');
+    input.addEventListener('input', function(){ socket.emit('typing', {username:username, room:currentRoom}); });
+
+    // send on click and Enter
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function sendMessage(){
+      const val = input.value.trim();
+      if(!val) return;
+      socket.emit('send_message',{username:username, avatar:avatar, room:currentRoom, message:val, type:'text'});
+      input.value='';
+      input.focus();
+    }
+
+    // attach image
+    document.getElementById('attachBtn').addEventListener('click', function(){ document.getElementById('fileInput').click(); });
+    document.getElementById('fileInput').addEventListener('change', function(e){
+      const f = e.target.files[0]; if(!f) return;
+      const form = new FormData(); form.append('file', f);
+      fetch('/upload', {method:'POST', body:form}).then(r=>r.json()).then(res=>{
+        if(res.ok){ socket.emit('send_message',{username:username, avatar:avatar, room:currentRoom, message:res.url, type:'image'}); }
+      });
+    });
+
+    // emoji picker (simple)
+    const emojiBtn = document.getElementById('emojiBtn');
+    const emojiPicker = document.getElementById('emojiPicker');
+    const emojis = ['😀','😄','😂','😍','😘','👍','🎉','🔥','😢','😮'];
+    emojis.forEach(e=>{ const b=document.createElement('button'); b.className='emoji-btn'; b.textContent=e; b.onclick=()=>{ input.value += e; input.focus(); }; emojiPicker.appendChild(b); });
+    emojiBtn.addEventListener('click', ()=>{ emojiPicker.style.display = emojiPicker.style.display==='none'?'block':'none'; });
+
+    function escapeHtml(t){ var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}; return (t||'').replace(/[&<>"']/g, function(c){ return m[c]; }); }
+    rooms.forEach(r=>{ const b=document.createElement('button'); b.className='room-btn'; b.textContent=r; b.onclick=()=>{ socket.emit('leave',{username:username, room:currentRoom}); currentRoom = r; socket.emit('join',{username:username, avatar:avatar, room:currentRoom}); fetchHistory(currentRoom); }; roomsList.appendChild(b); });
+  </script>
+</body>
+</html>
