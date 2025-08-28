@@ -68,3 +68,11 @@ def login():
     session["username"] = user[0]
     session["avatar"] = user[2] or ""
     return redirect(url_for("chat"))
+
+@app.route("/logout")
+def logout():
+    user = session.get("username")
+    session.clear()
+    # emit updated online users to everyone
+    socketio.emit("online_users", [{"username":u,"avatar":a} for u,a in users_online.items()])
+    return redirect(url_for("index"))
