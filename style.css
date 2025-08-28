@@ -45,3 +45,41 @@ body{
   color:var(--text);
   cursor:pointer
 }
+.app.modern{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:18px;
+  height:calc(100vh - 72px);
+  padding:16px
+}
+.sidebar{padding:16px}
+.me{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px
+}
+.me-avatar{
+  width:48px;
+  height:48px;
+  border-radius:12px;
+  border:2px solid rgba(255,255,255,0.04)
+}
+.me-name{font-weight:700}
+.online-list{
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  overflow:auto
+}
+.online-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px;
+  border-radius:10px;
+  transition:background .12s
+}
+.online-item:hover{background:rgba(255,255,255,0.02)}
+.online-avatar{width:40px;height:40px;border-radius:10px}
