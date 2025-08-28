@@ -106,3 +106,13 @@ def logout():
     # emit updated online users to everyone
     socketio.emit("online_users", [{"username":u,"avatar":a} for u,a in users_online.items()])
     return redirect(url_for("index"))
+
+@app.route("/chat")
+def chat():
+    if "username" not in session:
+        return redirect(url_for("index"))
+    return render_template("chat_pro.html", username=session["username"], avatar=session.get("avatar",""), rooms=list(rooms.keys()))
+
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
