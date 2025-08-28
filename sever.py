@@ -50,3 +50,27 @@ users_online = {}  # username -> avatar
 rooms = {"general": []}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.',1)[1].lower() in ALLOWED_EXT
+@app.route("/")
+def index():
+    ...
+@app.route("/register", methods=["POST"])
+def register():
+    ...
+@app.route("/login", methods=["POST"])
+def login():
+    ...
+@app.route("/logout")
+def logout():
+    ...
+@app.route("/chat")
+def chat():
+    ...
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    ...
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    ...
+@app.route("/history/<room>")
+def history(room):
+    ...
