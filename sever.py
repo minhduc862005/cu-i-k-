@@ -44,3 +44,12 @@ def register():
     if not username or not password:
         flash("Tên hoặc mật khẩu không hợp lệ", "error")
         return redirect(url_for("index"))
+    # check exists
+    existing = query_db("SELECT id FROM users WHERE username=?", (username,), one=True)
+    if existing:
+        flash("Tên người dùng đã tồn tại", "error")
+        return redirect(url_for("index"))
+    pwdhash = generate_password_hash(password)
+    query_db("INSERT INTO users (username,password_hash,avatar) VALUES (?,?,?)", (username, pwdhash, avatar))
+    flash("Đăng ký thành công. Bạn có thể đăng nhập ngay.", "success")
+    return redirect(url_for("index"))
